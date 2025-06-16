@@ -1,0 +1,51 @@
+CREATE TABLE usuario (
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    cpf VARCHAR(11) UNIQUE NOT NULL,
+    data_nascimento DATE NOT NULL,
+    telefone VARCHAR(15) NOT NULL,
+    tipo_usuario ENUM('FUNCIONARIO', 'CLIENTE') NOT NULL,
+    senha_hash VARCHAR(32) NOT NULL,
+    otp_ativo VARCHAR(6),
+    otp_expiracao DATETIME
+);
+
+CREATE TABLE funcionario (
+    id_funcionario INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT,
+    codigo_funcionario VARCHAR(20) UNIQUE NOT NULL,
+    cargo ENUM('ESTAGIARIO', 'ATENDENTE', 'GERENTE') NOT NULL,
+    id_supervisor INT,
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
+);
+
+CREATE TABLE cliente (
+    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT,
+    score_credito DECIMAL(5,2) DEFAULT 0,
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
+);
+
+CREATE TABLE conta (
+    id_conta INT AUTO_INCREMENT PRIMARY KEY,
+    numero_conta VARCHAR(20) UNIQUE NOT NULL,
+    id_agencia INT,
+    saldo DECIMAL(15,2) NOT NULL DEFAULT 0,
+    tipo_conta ENUM('POUPANCA', 'CORRENTE', 'INVESTIMENTO') NOT NULL,
+    id_cliente INT,
+    data_abertura DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('ATIVA', 'ENCERRADA', 'BLOQUEADA') NOT NULL DEFAULT 'ATIVA',
+    FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente)
+);
+
+CREATE TABLE transacao (
+    id_transacao INT AUTO_INCREMENT PRIMARY KEY,
+    id_conta_origem INT,
+    id_conta_destino INT,
+    tipo_transacao ENUM('DEPOSITO', 'SAQUE', 'TRANSFERENCIA', 'TAXA', 'RENDIMENTO') NOT NULL,
+    valor DECIMAL(15,2) NOT NULL,
+    data_hora TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    descricao VARCHAR(100),
+    FOREIGN KEY (id_conta_origem) REFERENCES conta(id_conta),
+    FOREIGN KEY (id_conta_destino) REFERENCES conta(id_conta)
+);

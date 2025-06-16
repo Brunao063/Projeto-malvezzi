@@ -1,0 +1,24 @@
+DELIMITER $$
+CREATE PROCEDURE gerar_otp(IN id_usuario INT)
+BEGIN
+    DECLARE novo_otp VARCHAR(6);
+    SET novo_otp = LPAD(FLOOR(RAND() * 1000000), 6, '0');
+    UPDATE usuario SET otp_ativo = novo_otp, otp_expiracao = NOW() + INTERVAL 5 MINUTE
+    WHERE id_usuario = id_usuario;
+    SELECT novo_otp;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE calcular_score_credito(IN id_cliente INT)
+BEGIN
+    DECLARE total_trans DECIMAL(15,2);
+    DECLARE media_trans DECIMAL(15,2);
+    SELECT SUM(valor), AVG(valor) INTO total_trans, media_trans
+    FROM transacao t
+    JOIN conta c ON t.id_conta_origem = c.id_conta
+    WHERE c.id_cliente = id_cliente AND t.tipo_transacao IN ('DEPOSITO', 'SAQUE');
+    UPDATE cliente SET score_credito = LEAST(100, (total_trans / 1000) + (media_trans / 100))
+    WHERE id_cliente = id_cliente;
+END $$
+DELIMITER ;
